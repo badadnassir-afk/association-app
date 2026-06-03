@@ -19,7 +19,12 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
-CORS(app, origins=os.environ.get('FRONTEND_URL', '*'), supports_credentials=True)
+# Origines autorisées pour CORS
+_cors_origins = [o for o in [os.environ.get('FRONTEND_URL'), 'https://association-app.netlify.app'] if o]
+# Fallback pour le développement local
+if not _cors_origins:
+    _cors_origins = ['http://localhost:3000', 'http://localhost:5000']
+CORS(app, origins=_cors_origins, supports_credentials=True)
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
