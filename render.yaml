@@ -11,7 +11,7 @@ services:
           name: association-db
           property: connectionString
       - key: FRONTEND_URL
-        value: https://your-app.netlify.app  # ← remplacez par votre URL Netlify
+        value: https://association-app.netlify.app
 
 databases:
   - name: association-db

@@ -7,9 +7,15 @@ async function req(method, path, body) {
     headers: { 'Content-Type': 'application/json' },
   };
   if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(`${BASE}${path}`, opts);
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, opts);
+  } catch (err) {
+    // Network error (DNS, CORS, timeout, etc.)
+    throw new Error(`Impossible de joindre le serveur (${BASE}). Vérifiez que l'API est accessible.`);
+  }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  if (!res.ok) throw new Error(data.error || `Erreur ${res.status} : ${res.statusText}`);
   return data;
 }
 

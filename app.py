@@ -6,6 +6,7 @@ from math import floor
 from uuid import uuid4
 
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, abort, flash, g, redirect, render_template, request, jsonify, session, url_for, Response
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
 from flask_cors import CORS
@@ -19,12 +20,21 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
+# ProxyFix : Render utilise un reverse proxy, Flask doit savoir qu'il est derrière HTTPS
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
 # Origines autorisées pour CORS
 _cors_origins = [o for o in [os.environ.get('FRONTEND_URL'), 'https://association-app.netlify.app'] if o]
 # Fallback pour le développement local
 if not _cors_origins:
     _cors_origins = ['http://localhost:3000', 'http://localhost:5000']
 CORS(app, origins=_cors_origins, supports_credentials=True)
+
+# Configuration session pour cross-origin (Netlify → Render)
+# En production : SameSite=None + Secure pour que le navigateur accepte le cookie
+if os.environ.get('FRONTEND_URL'):
+    app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+    app.config['SESSION_COOKIE_SECURE'] = True
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
