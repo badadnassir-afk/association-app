@@ -44,7 +44,7 @@ class User(UserMixin):
 
 def get_db():
     if 'db' not in g:
-        g.db = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+        g.db = psycopg2.connect(DATABASE_URL + "?sslmode=require", cursor_factory=psycopg2.extras.RealDictCursor)
     return g.db
 
 
