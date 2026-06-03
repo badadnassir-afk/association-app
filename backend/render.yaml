@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: association-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: association-db
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://your-app.netlify.app  # ← remplacez par votre URL Netlify
+
+databases:
+  - name: association-db
+    databaseName: association
+    user: association_user
+    plan: free

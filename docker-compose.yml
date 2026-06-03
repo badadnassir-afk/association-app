@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: association
+      POSTGRES_USER: association_user
+      POSTGRES_PASSWORD: association_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://association_user:association_pass@db:5432/association
+      SECRET_KEY: dev-secret-key-change-in-prod
+      FRONTEND_URL: http://localhost:3000
+    depends_on:
+      - db
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
+    command: sh -c "npm install && npm start"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
